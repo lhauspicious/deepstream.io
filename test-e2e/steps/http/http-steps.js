@@ -10,9 +10,11 @@ const utils = require('../client/utils')
 
 let httpClients = {}
 
-module.exports = function () {
+const { defineSupportCode } = require('cucumber')
 
-  this.Given(/^(.+) authenticates? with http server (\d+)$/, (clientExpression, server, done) => {
+defineSupportCode(({ When, Given, Then, Before, After }) => {
+
+  Given(/^(.+) authenticates? with http server (\d+)$/, (clientExpression, server, done) => {
     clientHandler.getClientNames(clientExpression).forEach((clientName) => {
       let serverUrl
       if (global.cluster.getAuthUrl) {
@@ -24,6 +26,7 @@ module.exports = function () {
         username: clientName,
         password: 'abcdefgh'
       }
+
       needle.post(serverUrl, message, { json: true }, (err, response) => {
         process.nextTick(done)
         expect(err).to.be.null
@@ -40,7 +43,7 @@ module.exports = function () {
     })
   })
 
-  this.Given(/^(.+) authenticates? with http server (\d+) with details ("[^"]*"|\d+|\{.*\})?$/, (clientExpression, server, data, done) => {
+  Given(/^(.+) authenticates? with http server (\d+) with details ("[^"]*"|\d+|\{.*\})?$/, (clientExpression, server, data, done) => {
     clientHandler.getClientNames(clientExpression).forEach((clientName) => {
       let serverUrl
       if (global.cluster.getAuthUrl) {
@@ -63,7 +66,7 @@ module.exports = function () {
     })
   })
 
-  this.Then(/^the last response (.+) received contained the properties "([^"]*)"$/, (clientExpression, properties) => {
+  Then(/^the last response (.+) received contained the properties "([^"]*)"$/, (clientExpression, properties) => {
     const propertyArray = properties.split(',')
     clientHandler.getClientNames(clientExpression).forEach((clientName) => {
       const client = httpClients[clientName]
@@ -73,7 +76,7 @@ module.exports = function () {
     })
   })
 
-  this.When(/^(.+) queues? (?:an|the|"(\d+)") events? "([^"]*)"(?: with data ("[^"]*"|\d+|\{.*\}))?$/, (clientExpression, numEvents, eventName, rawData) => {
+  When(/^(.+) queues? (?:an|the|"(\d+)") events? "([^"]*)"(?: with data ("[^"]*"|\d+|\{.*\}))?$/, (clientExpression, numEvents, eventName, rawData) => {
     clientHandler.getClientNames(clientExpression).forEach((clientName) => {
       const client = httpClients[clientName]
       const jifMessage = {
@@ -96,7 +99,7 @@ module.exports = function () {
     })
   })
 
-  this.When(/^(.+) sends the data ("[^"]*"|\d+|\{.*\})$/, (clientExpression, rawData, done) => {
+  When(/^(.+) sends the data ("[^"]*"|\d+|\{.*\})$/, (clientExpression, rawData, done) => {
     clientHandler.getClientNames(clientExpression).forEach((clientName) => {
       const client = httpClients[clientName]
       needle.post(`${client.serverUrl}`, JSON.parse(rawData), { json: true }, (err, response) => {
@@ -106,7 +109,7 @@ module.exports = function () {
     })
   })
 
-  this.When(/^(.+) queues "(\d+)" random messages$/, (clientExpression, numMessages) => {
+  When(/^(.+) queues "(\d+)" random messages$/, (clientExpression, numMessages) => {
     clientHandler.getClientNames(clientExpression).forEach((clientName) => {
       const client = httpClients[clientName]
       for (let i = 0; i < numMessages; i++) {
@@ -160,7 +163,7 @@ module.exports = function () {
     })
   })
 
-  this.When(/^(.+) queues a presence query$/, (clientExpression) => {
+  When(/^(.+) queues a presence query$/, (clientExpression) => {
     clientHandler.getClientNames(clientExpression).forEach((clientName) => {
       const client = httpClients[clientName]
       const jifMessage = {
@@ -172,7 +175,7 @@ module.exports = function () {
     })
   })
 
-  this.When(/^(.+) queues? (?:an|the) RPC call to "([^"]*)"(?: with arguments ("[^"]*"|\d+|\{.*\}))?$/, (clientExpression, rpcName, rawData) => {
+  When(/^(.+) queues? (?:an|the) RPC call to "([^"]*)"(?: with arguments ("[^"]*"|\d+|\{.*\}))?$/, (clientExpression, rpcName, rawData) => {
     clientHandler.getClientNames(clientExpression).forEach((clientName) => {
       const client = httpClients[clientName]
       const jifMessage = {
@@ -189,7 +192,7 @@ module.exports = function () {
     })
   })
 
-  this.When(/^(.+) queues? a fetch for record "([^"]*)"$/, (clientExpression, recordName) => {
+  When(/^(.+) queues? a fetch for record "([^"]*)"$/, (clientExpression, recordName) => {
     clientHandler.getClientNames(clientExpression).forEach((clientName) => {
       const client = httpClients[clientName]
       const jifMessage = {
@@ -202,7 +205,7 @@ module.exports = function () {
     })
   })
 
-  this.When(/^(.+) queues? a write to record "([^"]*)"(?: and path "([^"]*)")? with data '([^']*)'(?: and version "(-?\d+)")?$/, (clientExpression, recordName, path, rawData, version) => {
+  When(/^(.+) queues? a write to record "([^"]*)"(?: and path "([^"]*)")? with data '([^']*)'(?: and version "(-?\d+)")?$/, (clientExpression, recordName, path, rawData, version) => {
     clientHandler.getClientNames(clientExpression).forEach((clientName) => {
       const client = httpClients[clientName]
       const jifMessage = {
@@ -224,7 +227,7 @@ module.exports = function () {
     })
   })
 
-  this.When(/^(.+) queues? a delete for record "([^"]*)"$/, (clientExpression, recordName) => {
+  When(/^(.+) queues? a delete for record "([^"]*)"$/, (clientExpression, recordName) => {
     clientHandler.getClientNames(clientExpression).forEach((clientName) => {
       const client = httpClients[clientName]
       const jifMessage = {
@@ -237,7 +240,7 @@ module.exports = function () {
     })
   })
 
-  this.When(/^(.+) queues? a head for record "([^"]*)"$/, (clientExpression, recordName) => {
+  When(/^(.+) queues? a head for record "([^"]*)"$/, (clientExpression, recordName) => {
     clientHandler.getClientNames(clientExpression).forEach((clientName) => {
       const client = httpClients[clientName]
       const jifMessage = {
@@ -250,7 +253,7 @@ module.exports = function () {
     })
   })
 
-  this.When(/^(.+) flushe?s? their http queues?$/, (clientExpression, done) => {
+  When(/^(.+) flushe?s? their http queues?$/, (clientExpression, done) => {
     clientHandler.getClientNames(clientExpression).forEach((clientName) => {
       const client = httpClients[clientName]
       const message = {
@@ -265,7 +268,7 @@ module.exports = function () {
     })
   })
 
-  this.Then(/^(.+) last response said that clients? "([^"]*)" (?:is|are) connected(?: at index "(\d+)")?$/, (clientExpression, connectedClients, rawIndex) => {
+  Then(/^(.+) last response said that clients? "([^"]*)" (?:is|are) connected(?: at index "(\d+)")?$/, (clientExpression, connectedClients, rawIndex) => {
     clientHandler.getClientNames(clientExpression).forEach((clientName) => {
       const responseIndex = rawIndex === undefined ? 0 : rawIndex
       const client = httpClients[clientName]
@@ -281,7 +284,7 @@ module.exports = function () {
     })
   })
 
-  this.Then(/^(.+) receives? an RPC response(?: with data ("[^"]*"|\d+|\{.*\}))?(?: at index "(\d+)")?$/, (clientExpression, rawData, rawIndex) => {
+  Then(/^(.+) receives? an RPC response(?: with data ("[^"]*"|\d+|\{.*\}))?(?: at index "(\d+)")?$/, (clientExpression, rawData, rawIndex) => {
     clientHandler.getClientNames(clientExpression).forEach((clientName) => {
       const responseIndex = rawIndex === undefined ? 0 : rawIndex
       const client = httpClients[clientName]
@@ -299,7 +302,7 @@ module.exports = function () {
     })
   })
 
-  this.Then(/^(.+) receives? the record (?:head )?"([^"]*)"(?: with data '([^']+)')?(?: (?:with|and) version "(\d+)")?(?: at index "(\d+)")?$/, (clientExpression, recordName, rawData, version, rawIndex) => {
+  Then(/^(.+) receives? the record (?:head )?"([^"]*)"(?: with data '([^']+)')?(?: (?:with|and) version "(\d+)")?(?: at index "(\d+)")?$/, (clientExpression, recordName, rawData, version, rawIndex) => {
     clientHandler.getClientNames(clientExpression).forEach((clientName) => {
       const responseIndex = rawIndex === undefined ? 0 : rawIndex
       const client = httpClients[clientName]
@@ -320,7 +323,7 @@ module.exports = function () {
     })
   })
 
-  this.Then(/^(.+) last response was a "(\S*)"(?: with length "(\d+)")?$/, (clientExpression, result, length) => {
+  Then(/^(.+) last response was a "(\S*)"(?: with length "(\d+)")?$/, (clientExpression, result, length) => {
     clientHandler.getClientNames(clientExpression).forEach((clientName) => {
       const client = httpClients[clientName]
       const lastResponse = client.lastResponse
@@ -339,7 +342,7 @@ module.exports = function () {
     })
   })
 
-  this.Then(/^(.+) (eventually )?receives "(\d+)" events? "([^"]*)"(?: with data (.+))?$/, (clientExpression, eventually, numEvents, subscriptionName, data, done) => {
+  Then(/^(.+) (eventually )?receives "(\d+)" events? "([^"]*)"(?: with data (.+))?$/, (clientExpression, eventually, numEvents, subscriptionName, data, done) => {
     setTimeout(() => {
       clientHandler.getClients(clientExpression).forEach((client) => {
         const eventSpy = client.event.callbacks[subscriptionName]
@@ -351,7 +354,7 @@ module.exports = function () {
     }, eventually ? 350 : 0)
   })
 
-  this.Then(/^(.+) last response had a success(?: at index "(\d+)")?$/, (clientExpression, rawIndex) => {
+  Then(/^(.+) last response had a success(?: at index "(\d+)")?$/, (clientExpression, rawIndex) => {
     clientHandler.getClientNames(clientExpression).forEach((clientName) => {
       const responseIndex = rawIndex === undefined ? 0 : rawIndex
       const client = httpClients[clientName]
@@ -369,7 +372,7 @@ module.exports = function () {
     })
   })
 
-  this.Then(/^(.+) last response had an? "([^"]*)" error matching "([^"]*)"(?: at index "(\d+)")?$/, (clientExpression, topic, message, rawIndex) => {
+  Then(/^(.+) last response had an? "([^"]*)" error matching "([^"]*)"(?: at index "(\d+)")?$/, (clientExpression, topic, message, rawIndex) => {
     clientHandler.getClientNames(clientExpression).forEach((clientName) => {
       const responseIndex = rawIndex === undefined ? 0 : rawIndex
       const client = httpClients[clientName]
@@ -389,7 +392,7 @@ module.exports = function () {
     })
   })
 
-  this.Then(/^(.+) last response had an error matching "([^"]*)"$/, (clientExpression, message) => {
+  Then(/^(.+) last response had an error matching "([^"]*)"$/, (clientExpression, message) => {
     clientHandler.getClientNames(clientExpression).forEach((clientName) => {
       const client = httpClients[clientName]
       const lastResponse = client.lastResponse
@@ -402,7 +405,7 @@ module.exports = function () {
     })
   })
 
-  this.After(() => {
+  After(() => {
     for (const clientName in httpClients) {
       const client = httpClients[clientName]
       if (client.lastResponse && !client.resultChecked && !client.lastResponse.isAuthResponse) {
@@ -415,4 +418,4 @@ module.exports = function () {
     httpClients = {}
   })
 
-}
+})

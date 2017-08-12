@@ -9,7 +9,9 @@ const utils = require('./utils')
 
 const clients = clientHandler.clients
 
-module.exports = function () {
+const { defineSupportCode } = require('cucumber')
+
+defineSupportCode(({ When, Given, Then, Before, After }) => {
 
   /*
   this.Then(/^(.+) receives? at least one "([^"]*)" error "([^"]*)"$/, ( clientExpression, topicName, eventName ) => {
@@ -18,21 +20,21 @@ module.exports = function () {
 
     clientHandler.getClients( clientExpression ).forEach( ( client ) => {
   */
-  this.Given(/^(.+) logs? out$/, (clientExpression, done) => {
+  Given(/^(.+) logs? out$/, (clientExpression, done) => {
     clientHandler.getClients(clientExpression).forEach((client) => {
       client.client.close()
       setTimeout(done, utils.defaultDelay)
     })
   })
 
-  this.Given(/^(.+) connects to server (\d+)$/, (clientExpression, server, done) => {
+  Given(/^(.+) connects to server (\d+)$/, (clientExpression, server, done) => {
     clientHandler.getClientNames(clientExpression).forEach((clientName) => {
       clientHandler.createClient(clientName, server)
       done()
     })
   })
 
-  this.Given(/^(.+) connects? and logs? into server (\d+)$/, (clientExpression, server, done) => {
+  Given(/^(.+) connects? and logs? into server (\d+)$/, (clientExpression, server, done) => {
     clientHandler.getClientNames(clientExpression).forEach((clientName) => {
       const client = clientHandler.createClient(clientName, server)
       client.client.login({ username: clientName, password: 'abcdefgh' }, () => {
@@ -42,7 +44,7 @@ module.exports = function () {
     })
   })
 
-  this.Given(/^(.+) logs? in with username "([^"]*)" and password "([^"]*)"$/, (clientExpression, username, password, done) => {
+  Given(/^(.+) logs? in with username "([^"]*)" and password "([^"]*)"$/, (clientExpression, username, password, done) => {
     clientHandler.getClients(clientExpression).forEach((client) => {
       client.client.login({
         username,
@@ -55,7 +57,7 @@ module.exports = function () {
     })
   })
 
-  this.When(/^(.+) attempts? to login with username "([^"]*)" and password "([^"]*)"$/, (clientExpression, username, password) => {
+  When(/^(.+) attempts? to login with username "([^"]*)" and password "([^"]*)"$/, (clientExpression, username, password) => {
     clientHandler.getClients(clientExpression).forEach((client) => {
       client.client.login({
         username,
@@ -64,7 +66,7 @@ module.exports = function () {
     })
   })
 
-  this.Then(/^(.+) (?:is|are) notified of too many login attempts$/, (clientExpression) => {
+  Then(/^(.+) (?:is|are) notified of too many login attempts$/, (clientExpression) => {
     clientHandler.getClients(clientExpression).forEach((client) => {
       const loginSpy = client.login
       sinon.assert.callCount(loginSpy, 2)
@@ -74,7 +76,7 @@ module.exports = function () {
     })
   })
 
-  this.Then(/^(.+) receives? (no|an (un)?authenticated) login response(?: with data (\{.*\}))?$/, (clientExpression, no, unauth, data) => {
+  Then(/^(.+) receives? (no|an (un)?authenticated) login response(?: with data (\{.*\}))?$/, (clientExpression, no, unauth, data) => {
     clientHandler.getClients(clientExpression).forEach((client) => {
       const loginSpy = client.login
       if (no.match(/^no$/)) {
@@ -94,7 +96,7 @@ module.exports = function () {
     })
   })
 
-  this.Then(/^(.+) connections? times? out$/, (clientExpression, done) => {
+  Then(/^(.+) connections? times? out$/, (clientExpression, done) => {
     clientHandler.getClients(clientExpression).forEach((client) => {
       setTimeout(() => {
         const errorSpy = client.error[C.TOPIC.CONNECTION][C.EVENT.CONNECTION_AUTHENTICATION_TIMEOUT]
@@ -105,4 +107,4 @@ module.exports = function () {
     })
   })
 
-}
+})

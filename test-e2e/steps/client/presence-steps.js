@@ -7,12 +7,14 @@ const utils = require('./utils')
 
 const clients = clientHandler.clients
 
-module.exports = function () {
+const { defineSupportCode } = require('cucumber')
+
+defineSupportCode(({ Given, Then, When }) => {
 
   const subscribeEvent = 'subscribe'
   const queryEvent = 'query'
 
-  this.Given(/^(.+) subscribes to presence events$/, (clientExpression, done) => {
+  Given(/^(.+) subscribes to presence events$/, (clientExpression, done) => {
     clientHandler.getClients(clientExpression).forEach((client) => {
       client.presence.callbacks[subscribeEvent] = sinon.spy()
       client.client.presence.subscribe(client.presence.callbacks[subscribeEvent])
@@ -20,7 +22,7 @@ module.exports = function () {
     setTimeout(done, utils.defaultDelay)
   })
 
-  this.When(/^(.+) queries for connected clients$/, (clientExpression, done) => {
+  When(/^(.+) queries for connected clients$/, (clientExpression, done) => {
     clientHandler.getClients(clientExpression).forEach((client) => {
       client.presence.callbacks[queryEvent] = sinon.spy()
       client.client.presence.getAll(client.presence.callbacks[queryEvent])
@@ -28,7 +30,7 @@ module.exports = function () {
     setTimeout(done, utils.defaultDelay)
   })
 
-  this.Then(/^(.+) (?:is|are) notified that (.+) logged ([^"]*)$/, (notifeeExpression, notiferExpression, event) => {
+  Then(/^(.+) (?:is|are) notified that (.+) logged ([^"]*)$/, (notifeeExpression, notiferExpression, event) => {
     clientHandler.getClients(notifeeExpression).forEach((notifee) => {
       clientHandler.getClients(notiferExpression).forEach((notifier) => {
         sinon.assert.calledWith(notifee.presence.callbacks[subscribeEvent], notifier.user, event === 'in')
@@ -37,7 +39,7 @@ module.exports = function () {
     })
   })
 
-  this.Then(/^(.+) is notified that (?:clients|client) "([^"]*)" (?:are|is) connected$/, (clientExpression, connectedClients) => {
+  Then(/^(.+) is notified that (?:clients|client) "([^"]*)" (?:are|is) connected$/, (clientExpression, connectedClients) => {
     clientHandler.getClients(clientExpression).forEach((client) => {
       sinon.assert.calledOnce(client.presence.callbacks[queryEvent])
       sinon.assert.calledWith(client.presence.callbacks[queryEvent], connectedClients.split(','))
@@ -45,7 +47,7 @@ module.exports = function () {
     })
   })
 
-  this.Then(/^(.+) is notified that no clients are connected$/, (clientExpression) => {
+  Then(/^(.+) is notified that no clients are connected$/, (clientExpression) => {
     clientHandler.getClients(clientExpression).forEach((client) => {
       sinon.assert.calledOnce(client.presence.callbacks[queryEvent])
       sinon.assert.calledWith(client.presence.callbacks[queryEvent], [])
@@ -53,4 +55,4 @@ module.exports = function () {
     })
   })
 
-}
+})

@@ -72,6 +72,9 @@ function createClient(clientName, server) {
   clients[clientName].client.on('error', (message, event, topic) => {
     console.log('An Error occured on', clientName, message, event, topic)
 
+    if (!clients[clientName]) {
+      return
+    }
     const clientErrors = clients[clientName].error
     clientErrors[topic]          = clientErrors[topic] || {}
     clientErrors[topic][event] = clientErrors[topic][event] || sinon.spy()

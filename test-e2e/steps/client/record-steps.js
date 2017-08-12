@@ -14,9 +14,11 @@ function getListData(expression, listName) {
   return clientHandler.getClients(expression).map(client => client.record.lists[listName])
 }
 
-module.exports = function () {
+const { defineSupportCode } = require('cucumber')
 
-  this.When(/(.+) gets? the record "([^"]*)"$/, (clientExpression, recordName, done) => {
+defineSupportCode(({ When, Then, Given }) => {
+
+  When(/(.+) gets? the record "([^"]*)"$/, (clientExpression, recordName, done) => {
     const clients = clientHandler.getClients(clientExpression)
     clients.forEach((client) => {
       const recordData = {
@@ -35,7 +37,7 @@ module.exports = function () {
     setTimeout(done, utils.defaultDelay * clients.length * 10)
   })
 
-  this.When(/(.+) sets the merge strategy to (remote|local)$/, (clientExpression, recordName, done) => {
+  When(/(.+) sets the merge strategy to (remote|local)$/, (clientExpression, recordName, done) => {
     clientHandler.getClients(clientExpression).forEach((client) => {
       const recordData = {
         record: client.client.record.getRecord(recordName),
@@ -52,7 +54,7 @@ module.exports = function () {
     setTimeout(done, utils.defaultDelay)
   })
 
-  this.Then(/^(.+) gets? notified of record "([^"]*)" getting (discarded|deleted)$/, (clientExpression, recordName, action) => {
+  Then(/^(.+) gets? notified of record "([^"]*)" getting (discarded|deleted)$/, (clientExpression, recordName, action) => {
     getRecordData(clientExpression, recordName).forEach((recordData) => {
       if (action === 'discarded') {
         sinon.assert.calledOnce(recordData.discardCallback)
@@ -64,7 +66,7 @@ module.exports = function () {
     })
   })
 
-  this.Then(/^(.+) receives? an update for record "([^"]*)" with data '([^']+)'$/, (clientExpression, recordName, data) => {
+  Then(/^(.+) receives? an update for record "([^"]*)" with data '([^']+)'$/, (clientExpression, recordName, data) => {
     data = utils.parseData(data)
     getRecordData(clientExpression, recordName).forEach((recordData) => {
       sinon.assert.calledOnce(recordData.subscribeCallback)
@@ -73,7 +75,7 @@ module.exports = function () {
     })
   })
 
-  this.Then(/^(.+) receives? an update for record "([^"]*)" and path "([^"]*)" with data '([^']+)'$/, (clientExpression, recordName, path, data) => {
+  Then(/^(.+) receives? an update for record "([^"]*)" and path "([^"]*)" with data '([^']+)'$/, (clientExpression, recordName, path, data) => {
     data = utils.parseData(data)
     getRecordData(clientExpression, recordName).forEach((recordData) => {
       sinon.assert.calledOnce(recordData.subscribePathCallbacks[path])
@@ -82,19 +84,19 @@ module.exports = function () {
     })
   })
 
-  this.Then(/^(.+) (?:don't|doesn't|does not) receive an update for record "([^"]*)"$/, (clientExpression, recordName) => {
+  Then(/^(.+) (?:don't|doesn't|does not) receive an update for record "([^"]*)"$/, (clientExpression, recordName) => {
     getRecordData(clientExpression, recordName).forEach((recordData) => {
       sinon.assert.notCalled(recordData.subscribeCallback)
     })
   })
 
-  this.Then(/^(.+) don't receive an update for record "([^"]*)" and path "([^"]*)"$/, (clientExpression, recordName, path) => {
+  Then(/^(.+) don't receive an update for record "([^"]*)" and path "([^"]*)"$/, (clientExpression, recordName, path) => {
     getRecordData(clientExpression, recordName).forEach((recordData) => {
       sinon.assert.notCalled(recordData.subscribePathCallbacks[path])
     })
   })
 
-  this.Given(/^(.+) (un)?subscribes? to record "([^"]*)"( with immediate flag)?$/, (clientExpression, not, recordName, immedate) => {
+  Given(/^(.+) (un)?subscribes? to record "([^"]*)"( with immediate flag)?$/, (clientExpression, not, recordName, immedate) => {
     getRecordData(clientExpression, recordName).forEach((recordData) => {
       if (not) {
         recordData.record.unsubscribe(recordData.subscribeCallback)
@@ -104,7 +106,7 @@ module.exports = function () {
     })
   })
 
-  this.Given(/^(.+) (un)?subscribes? to record "([^"]*)" with path "([^"]*)"( with immediate flag)?$/, (clientExpression, not, recordName, path, immedate) => {
+  Given(/^(.+) (un)?subscribes? to record "([^"]*)" with path "([^"]*)"( with immediate flag)?$/, (clientExpression, not, recordName, path, immedate) => {
     getRecordData(clientExpression, recordName).forEach((recordData) => {
       if (not) {
         recordData.record.unsubscribe(path, recordData.subscribePathCallbacks[path])
@@ -115,21 +117,21 @@ module.exports = function () {
     })
   })
 
-  this.Then(/^(.+) (?:have|has) record "([^"]*)" with data '([^']+)'$/, (clientExpression, recordName, data) => {
+  Then(/^(.+) (?:have|has) record "([^"]*)" with data '([^']+)'$/, (clientExpression, recordName, data) => {
     data = utils.parseData(data)
     getRecordData(clientExpression, recordName).forEach((recordData) => {
       assert.deepEqual(data, recordData.record.get())
     })
   })
 
-  this.Then(/^(.+) (?:have|has) record "([^"]*)" with path "([^"]*)" and data '([^']+)'$/, (clientExpression, recordName, path, data) => {
+  Then(/^(.+) (?:have|has) record "([^"]*)" with path "([^"]*)" and data '([^']+)'$/, (clientExpression, recordName, path, data) => {
     data = utils.parseData(data)
     getRecordData(clientExpression, recordName).forEach((recordData) => {
       assert.deepEqual(data, recordData.record.get(path))
     })
   })
 
-  this.Given(/^(.+) (discards?|deletes?) record "([^"]*)"$/, (clientExpression, action, recordName, done) => {
+  Given(/^(.+) (discards?|deletes?) record "([^"]*)"$/, (clientExpression, action, recordName, done) => {
     getRecordData(clientExpression, recordName).forEach((recordData) => {
       if (action.indexOf('di') > -1) {
         recordData.record.discard()
@@ -140,20 +142,20 @@ module.exports = function () {
     setTimeout(done, utils.defaultDelay)
   })
 
-  this.When(/^(.+) requires? write acknowledgements for record "([^"]*)"$/, (clientExpression, recordName) => {
+  When(/^(.+) requires? write acknowledgements for record "([^"]*)"$/, (clientExpression, recordName) => {
     clientHandler.getClients(clientExpression).forEach((client) => {
       client.record.records[recordName].setCallback = sinon.spy()
     })
   })
 
-  this.When(/^(.+) sets? the record "([^"]*)" with data '([^']+)'$/, (clientExpression, recordName, data, done) => {
+  When(/^(.+) sets? the record "([^"]*)" with data '([^']+)'$/, (clientExpression, recordName, data, done) => {
     getRecordData(clientExpression, recordName).forEach((recordData) => {
       if (recordData.setCallback) { recordData.record.set(utils.parseData(data), recordData.setCallback) } else { recordData.record.set(utils.parseData(data)) }
     })
     setTimeout(done, utils.defaultDelay)
   })
 
-  this.When(/^(.+) sets? the record "([^"]*)" without being subscribed with data '([^']+)'$/, (clientExpression, recordName, data, done) => {
+  When(/^(.+) sets? the record "([^"]*)" without being subscribed with data '([^']+)'$/, (clientExpression, recordName, data, done) => {
     const clients = clientHandler.getClients(clientExpression)
     clients.forEach((client) => {
       client.client.record.setData(recordName, utils.parseData(data))
@@ -161,7 +163,7 @@ module.exports = function () {
     setTimeout(done, utils.defaultDelay * clients.length)
   })
 
-  this.When(/^(.+) sets? the record "([^"]*)" without being subscribed with data '([^']+)' and requires write acknowledgement$/, (clientExpression, recordName, data, done) => {
+  When(/^(.+) sets? the record "([^"]*)" without being subscribed with data '([^']+)' and requires write acknowledgement$/, (clientExpression, recordName, data, done) => {
     const clients = clientHandler.getClients(clientExpression)
     clients.forEach((client) => {
       if (!client.record.writeAcks) {
@@ -173,7 +175,7 @@ module.exports = function () {
     setTimeout(done, utils.defaultDelay * clients.length)
   })
 
-  this.When(
+  When(
     /^(.+) sets? the record "([^"]*)" without being subscribed with path "([^"]*)" and data '([^']+)'$/,
     (clientExpression, recordName, path, data, done) => {
     const clients = clientHandler.getClients(clientExpression)
@@ -183,14 +185,14 @@ module.exports = function () {
     setTimeout(done, utils.defaultDelay * clients.length)
   })
 
-  this.When(/^(.+) sets? the record "([^"]*)" and path "([^"]*)" with data '([^']+)'$/, (clientExpression, recordName, path, data, done) => {
+  When(/^(.+) sets? the record "([^"]*)" and path "([^"]*)" with data '([^']+)'$/, (clientExpression, recordName, path, data, done) => {
     getRecordData(clientExpression, recordName).forEach((recordData) => {
       if (recordData.setCallback) { recordData.record.set(path, utils.parseData(data), recordData.setCallback) } else { recordData.record.set(path, utils.parseData(data)) }
     })
     setTimeout(done, utils.defaultDelay)
   })
 
-  this.Then(/^(.+) is told that the record "([^"]*)" was set without error$/, (clientExpression, recordName) => {
+  Then(/^(.+) is told that the record "([^"]*)" was set without error$/, (clientExpression, recordName) => {
     getRecordData(clientExpression, recordName).forEach((recordData) => {
       if (!recordData) return
       sinon.assert.calledOnce(recordData.setCallback)
@@ -205,7 +207,7 @@ module.exports = function () {
     })
   })
 
-  this.Then(/^(.+) is told that the record "([^"]*)" experienced error "([^"]*)" while setting$/, (clientExpression, recordName, errorMessage, done) => {
+  Then(/^(.+) is told that the record "([^"]*)" experienced error "([^"]*)" while setting$/, (clientExpression, recordName, errorMessage, done) => {
     setTimeout(() => {
       getRecordData(clientExpression, recordName).forEach((recordData) => {
         sinon.assert.calledOnce(recordData.setCallback)
@@ -216,14 +218,14 @@ module.exports = function () {
     }, 100)
   })
 
-  this.Given(/^(.+) requests? a snapshot of record "([^"]*)"$/, (clientExpression, recordName, done) => {
+  Given(/^(.+) requests? a snapshot of record "([^"]*)"$/, (clientExpression, recordName, done) => {
     clientHandler.getClients(clientExpression).forEach((client) => {
       client.client.record.snapshot(recordName, client.record.snapshotCallback)
     })
     setTimeout(done, utils.defaultDelay)
   })
 
-  this.Then(/^(.+) gets? a snapshot response for "([^"]*)" with (data|error) '([^']+)'$/, (clientExpression, recordName, type, data) => {
+  Then(/^(.+) gets? a snapshot response for "([^"]*)" with (data|error) '([^']+)'$/, (clientExpression, recordName, type, data) => {
     clientHandler.getClients(clientExpression).forEach((client) => {
       sinon.assert.calledOnce(client.record.snapshotCallback)
       if (type === 'data') {
@@ -235,14 +237,14 @@ module.exports = function () {
     })
   })
 
-  this.Given(/^(.+) asks? if record "([^"]*)" exists$/, (clientExpression, recordName, done) => {
+  Given(/^(.+) asks? if record "([^"]*)" exists$/, (clientExpression, recordName, done) => {
     clientHandler.getClients(clientExpression).forEach((client) => {
       client.client.record.has(recordName, client.record.hasCallback)
     })
     setTimeout(done, utils.defaultDelay)
   })
 
-  this.Then(/^(.+) gets? told record "([^"]*)" (.*)exists?$/, (clientExpression, recordName, adjective) => {
+  Then(/^(.+) gets? told record "([^"]*)" (.*)exists?$/, (clientExpression, recordName, adjective) => {
     clientHandler.getClients(clientExpression).forEach((client) => {
       sinon.assert.calledOnce(client.record.hasCallback)
       sinon.assert.calledWith(client.record.hasCallback, null, adjective.indexOf('not') === -1)
@@ -254,7 +256,7 @@ module.exports = function () {
    *********************************************************** Lists ************************************************************
    ********************************************************************************************************************************/
 
-  this.When(/(.+) gets? the list "([^"]*)"$/, (clientExpression, listName, done) => {
+  When(/(.+) gets? the list "([^"]*)"$/, (clientExpression, listName, done) => {
     clientHandler.getClients(clientExpression).forEach((client) => {
       const listData = {
         list: client.client.record.getList(listName),
@@ -277,7 +279,7 @@ module.exports = function () {
     setTimeout(done, utils.defaultDelay)
   })
 
-  this.Given(/^(.+) sets the entries on the list "([^"]*)" to '([^']*)'$/, (clientExpression, listName, data, done) => {
+  Given(/^(.+) sets the entries on the list "([^"]*)" to '([^']*)'$/, (clientExpression, listName, data, done) => {
     data = utils.parseData(data)
     getListData(clientExpression, listName).forEach((listData) => {
       listData.list.setEntries(data)
@@ -285,7 +287,7 @@ module.exports = function () {
     setTimeout(done, utils.defaultDelay)
   })
 
-  this.Given(/^(.+) (adds|removes) an entry "([^"]*)" (?:to|from) "([^""]*)"$/, (clientExpression, action, entryName, listName, done) => {
+  Given(/^(.+) (adds|removes) an entry "([^"]*)" (?:to|from) "([^""]*)"$/, (clientExpression, action, entryName, listName, done) => {
     getListData(clientExpression, listName).forEach((listData) => {
       if (action === 'adds') {
         listData.list.addEntry(entryName)
@@ -297,14 +299,14 @@ module.exports = function () {
   })
 
 
-  this.Then(/^(.+) have a list "([^"]*)" with entries '([^']*)'$/, (clientExpression, listName, data) => {
+  Then(/^(.+) have a list "([^"]*)" with entries '([^']*)'$/, (clientExpression, listName, data) => {
     data = utils.parseData(data)
     getListData(clientExpression, listName).forEach((listData) => {
       assert.deepEqual(listData.list.getEntries(), data)
     })
   })
 
-  this.Then(/^(.+) gets? notified of "([^"]*)" being (added|removed|moved) (?:to|in|from) "([^""]*)"$/, (clientExpression, entryName, action, listName) => {
+  Then(/^(.+) gets? notified of "([^"]*)" being (added|removed|moved) (?:to|in|from) "([^""]*)"$/, (clientExpression, entryName, action, listName) => {
     getListData(clientExpression, listName).forEach((listData) => {
       if (action === 'added') {
         sinon.assert.calledWith(listData.addedCallback, entryName)
@@ -316,7 +318,7 @@ module.exports = function () {
     })
   })
 
-  this.Then(/^(.+) gets? notified of list "([^"]*)" entries changing to '([^']*)'$/, (clientExpression, listName, data) => {
+  Then(/^(.+) gets? notified of list "([^"]*)" entries changing to '([^']*)'$/, (clientExpression, listName, data) => {
     data = utils.parseData(data)
     getListData(clientExpression, listName).forEach((listData) => {
       // sinon.assert.calledOnce( listData.subscribeCallback );
@@ -328,13 +330,13 @@ module.exports = function () {
    *********************************************************** ANONYMOUS RECORDS ************************************************************
    ********************************************************************************************************************************/
 
-  this.When(/(.+) gets? a anonymous record$/, (clientExpression) => {
+  When(/(.+) gets? a anonymous record$/, (clientExpression) => {
     clientHandler.getClients(clientExpression).forEach((client) => {
       client.record.anonymousRecord = client.client.record.getAnonymousRecord()
     })
   })
 
-  this.When(/(.+) sets? the underlying record to "([^"]*)" on the anonymous record$/, (clientExpression, recordName, done) => {
+  When(/(.+) sets? the underlying record to "([^"]*)" on the anonymous record$/, (clientExpression, recordName, done) => {
     clientHandler.getClients(clientExpression).forEach((client) => {
       console.log(recordName)
       client.record.anonymousRecord.setName(recordName)
@@ -342,11 +344,11 @@ module.exports = function () {
     setTimeout(done, utils.defaultDelay)
   })
 
-  this.When(/(.+) anonymous record data is '([^']*)'$/, (clientExpression, data) => {
+  When(/(.+) anonymous record data is '([^']*)'$/, (clientExpression, data) => {
     data = utils.parseData(data)
     clientHandler.getClients(clientExpression).forEach((client) => {
       assert.deepEqual(client.record.anonymousRecord.get(), data)
     })
   })
 
-}
+})

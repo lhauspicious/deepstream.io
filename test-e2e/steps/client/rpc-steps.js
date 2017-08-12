@@ -5,9 +5,11 @@ const sinon = require('sinon')
 const clientHandler = require('./client-handler')
 const utils = require('./utils')
 
-module.exports = function () {
+const { defineSupportCode } = require('cucumber')
 
-  this.Given(/^(.+) ((?:un)?provides?) the RPC "([^"]*)"$/, (clientExpression, unprovides, rpc, done) => {
+defineSupportCode(({ Then, When, Given }) => {
+
+  Given(/^(.+) (.*) the RPC "([^"]*)"$/, (clientExpression, unprovides, rpc, done) => {
     const rpcs = {
       addTwo: (client, data, response) => {
         client.rpc.provides.addTwo()
@@ -55,7 +57,7 @@ module.exports = function () {
     setTimeout(done, utils.defaultDelay)
   })
 
-  this.When(/^(.+) calls? the RPC "([^"]*)" with arguments? ("[^"]*"|\d+|\{.*\})$/, (clientExpression, rpc, args, done) => {
+  When(/^(.+) calls? the RPC "([^"]*)" with arguments? ("[^"]*"|\d+|\{.*\})$/, (clientExpression, rpc, args, done) => {
     clientHandler.getClients(clientExpression).forEach((client) => {
       const callback = client.rpc.callbacks[rpc] = sinon.spy()
       client.client.rpc.make(rpc, JSON.parse(args), (a, b) => {
@@ -65,7 +67,7 @@ module.exports = function () {
     })
   })
 
-  this.Then(/(.+) receives? a response for RPC "([^"]*)" with data ("[^"]*"|\d+|\{.*\})$/, (clientExpression, rpc, data) => {
+  Then(/(.+) receives? a response for RPC "([^"]*)" with data ("[^"]*"|\d+|\{.*\})$/, (clientExpression, rpc, data) => {
     clientHandler.getClients(clientExpression).forEach((client) => {
       sinon.assert.calledOnce(client.rpc.callbacks[rpc])
       sinon.assert.calledWith(client.rpc.callbacks[rpc], null, JSON.parse(data).toString())
@@ -73,7 +75,7 @@ module.exports = function () {
     })
   })
 
-  this.Then(/(.+) (eventually )?receives? a response for RPC "([^"]*)" with error "([^"]*)"$/, (clientExpression, eventually, rpc, error, done) => {
+  Then(/(.+) (eventually )?receives? a response for RPC "([^"]*)" with error "([^"]*)"$/, (clientExpression, eventually, rpc, error, done) => {
     setTimeout(() => {
       clientHandler.getClients(clientExpression).forEach((client) => {
         sinon.assert.calledOnce(client.rpc.callbacks[rpc])
@@ -84,7 +86,7 @@ module.exports = function () {
     }, eventually ? 150 : 0)
   })
 
-  this.Then(/(.+) RPCs? "([^"]*)" (?:is|are) (never called|called (?:once|(\d+) times?))$/, (clientExpression, rpc, times, nTimes) => {
+  Then(/(.+) RPCs? "([^"]*)" (?:is|are) (never called|called (?:once|(\d+) times?))$/, (clientExpression, rpc, times, nTimes) => {
     let timesCalled
     if (times.match(/never/)) {
       timesCalled = 0
@@ -100,4 +102,4 @@ module.exports = function () {
     })
   })
 
-}
+})

@@ -5,16 +5,18 @@ const sinon = require('sinon')
 const clientHandler = require('./client-handler')
 const utils = require('./utils')
 
-module.exports = function () {
+const { defineSupportCode } = require('cucumber')
 
-  this.When(/^(.+) publishes? (?:an|the) event "([^"]*)"(?: with data ("[^"]*"|\d+|\{.*\}))?$/, (clientExpression, subscriptionName, data, done) => {
+defineSupportCode(({ Then, When, Given }) => {
+
+  When(/^(.+) publishes? (?:an|the) event "([^"]*)"(?: with data ("[^"]*"|\d+|\{.*\}))?$/, (clientExpression, subscriptionName, data, done) => {
     clientHandler.getClients(clientExpression).forEach((client) => {
       client.client.event.emit(subscriptionName, utils.parseData(data))
     })
     setTimeout(done, utils.defaultDelay)
   })
 
-  this.Then(/^(.+) receives? (the|no) event "([^"]*)"(?: with data (.+))?$/, (clientExpression, theNo, subscriptionName, data) => {
+  Then(/^(.+) receives? (the|no) event "([^"]*)"(?: with data (.+))?$/, (clientExpression, theNo, subscriptionName, data) => {
     const doesReceive = !theNo.match(/^no$/)
 
     clientHandler.getClients(clientExpression).forEach((client) => {
@@ -29,7 +31,7 @@ module.exports = function () {
     })
   })
 
-  this.Given(/^(.+) subscribes? to (?:an|the) event "([^"]*)"$/, (clientExpression, subscriptionName, done) => {
+  Given(/^(.+) subscribes? to (?:an|the) event "([^"]*)"$/, (clientExpression, subscriptionName, done) => {
     clientHandler.getClients(clientExpression).forEach((client) => {
       client.event.callbacks[subscriptionName] = sinon.spy()
       client.client.event.subscribe(subscriptionName, client.event.callbacks[subscriptionName])
@@ -37,7 +39,7 @@ module.exports = function () {
     setTimeout(done, utils.defaultDelay)
   })
 
-  this.When(/^(.+) unsubscribes from (?:an|the) event "([^"]*)"$/, (clientExpression, subscriptionName, done) => {
+  When(/^(.+) unsubscribes from (?:an|the) event "([^"]*)"$/, (clientExpression, subscriptionName, done) => {
     clientHandler.getClients(clientExpression).forEach((client) => {
       client.client.event.unsubscribe(subscriptionName, client.event.callbacks[subscriptionName])
       client.event.callbacks[subscriptionName].isSubscribed = false
@@ -45,4 +47,4 @@ module.exports = function () {
     setTimeout(done, utils.defaultDelay)
   })
 
-}
+})

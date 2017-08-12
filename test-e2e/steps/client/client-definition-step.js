@@ -7,9 +7,11 @@ const clientHandler = require('./client-handler')
 
 const clients = clientHandler.clients
 
-module.exports = function () {
+const { defineSupportCode } = require('cucumber')
 
-  this.Then(/^(.+) receives? at least one "([^"]*)" error "([^"]*)"$/, (clientExpression, topicName, eventName) => {
+defineSupportCode(({ Then, Before, After }) => {
+
+  Then(/^(.+) receives? at least one "([^"]*)" error "([^"]*)"$/, (clientExpression, topicName, eventName) => {
     const topic = C.TOPIC[topicName.toUpperCase()]
     const event = C.EVENT[eventName.toUpperCase()]
 
@@ -20,7 +22,7 @@ module.exports = function () {
     })
   })
 
-  this.Then(/^(.+) receives? "([^"]*)" error "([^"]*)"$/, (clientExpression, topicName, eventName) => {
+  Then(/^(.+) receives? "([^"]*)" error "([^"]*)"$/, (clientExpression, topicName, eventName) => {
     const topic = C.TOPIC[topicName.toUpperCase()]
     const event = C.EVENT[eventName.toUpperCase()]
 
@@ -31,7 +33,11 @@ module.exports = function () {
     })
   })
 
-  this.Then(/^(.+) received? no errors$/, (clientExpression) => {
+  Then(/^a small amount of time passes$/, (done) => {
+    setTimeout(done, 500)
+  })
+
+  Then(/^(.+) received? no errors$/, (clientExpression) => {
     clientHandler.getClients(clientExpression).forEach((client) => {
       clientHandler.assertNoErrors(client.name)
     });
@@ -41,11 +47,11 @@ module.exports = function () {
    *************************************************** Boiler Plate ***************************************************************
    ********************************************************************************************************************************/
 
-  this.Before((/* scenario*/) => {
+  Before((/* scenario*/) => {
     // client are connecting via "Background" explictly
   })
 
-  this.After((scenario, done) => {
+  After((scenario, done) => {
     for (const client in clients) {
 
       clientHandler.assertNoErrors(client)
@@ -73,4 +79,4 @@ module.exports = function () {
     setTimeout(done, 100)
   })
 
-}
+})
