@@ -5,7 +5,7 @@ os:
   - Visual Studio 2015
 
 install:
-  - ps: Install-Product node 6.11.0 x64
+  - ps: Install-Product node 8 x64
   - git submodule update --init --recursive
   - npm install
 
@@ -14,7 +14,7 @@ test_script:
   - npm --version
   - npm test
   # Artifacts are packaged before before_deploy
-  - bash scripts\package.sh
+  - bash scripts\package.sh travis
   - For /d %%d in ( build\** ) do MOVE %%d %cd%
 
 artifacts:
@@ -32,17 +32,7 @@ deploy:
     bucket: ds-server-artifacts
     folder: $(APPVEYOR_REPO_NAME)
     on:
-      branch: master
+      branch: package/node8
       appveyor_repo_tag: false
-
-  - provider: GitHub
-    release: $(APPVEYOR_REPO_TAG_NAME)
-    description: 'Release description'
-    auth_token:
-      secure: tZHuiZVCwkXRYMihVyoNrmDxAm6xPbXyop7Plg5uUWIIqA1EoUCrTYd/V+0D1I+Y
-    draft: true
-    artifact: 'deepstream.io-release'
-    on:
-      appveyor_repo_tag: true
 
 build: off

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-LTS_VERSION="6.11"
+LTS_VERSION="8"
 NODE_VERSION=$( node --version )
 NODE_VERSION_WITHOUT_V=$( echo $NODE_VERSION | cut -c2-10 )
 COMMIT=$( node scripts/details.js COMMIT )
@@ -98,7 +98,6 @@ function compile {
     EXTRA_INCLUDES="        'src\/uws',"
 
     if [ $OS = "darwin" ]; then
-        echo -e "\t\tapplying patches only tested on darwin node v6.9.1"
         sed -i '' "s@'library_files': \[@'library_files': \[ 'lib\/uws.js',@" $NODE_SOURCE/node.gyp
         sed -i '' "s@'src/debug-agent.cc',@'src\/debug-agent.cc',$C_FILE_NAMES@" $NODE_SOURCE/node.gyp
         sed -i '' "s@'CLANG_CXX_LANGUAGE_STANDARD': 'gnu++0x',  # -std=gnu++0x@'CLANG_CXX_LANGUAGE_STANDARD': 'gnu++0x', 'CLANG_CXX_LIBRARY': 'libc++',@" $NODE_SOURCE/common.gypi
@@ -355,6 +354,10 @@ elif [ $OS = "linux" ]; then
 fi
 
 clean
+
+mkdir -p build/node8
+mv build/*.zip build/node8
+mv build/*.tar.gz build/node8
 
 echo "Files in build directory are $( ls build/ )"
 echo "Done"
